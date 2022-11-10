@@ -7,6 +7,7 @@ struct MuxUnit
 {
         int in_fd;
         int out_fd;
+	char mode;
         unsigned char status;
         unsigned char lastc;
         int baud;
@@ -29,7 +30,7 @@ struct MuxUnit
 #define MUX_UNIT_MASK 0x06
 
 void mux_init(void);
-void mux_attach(unsigned unit, int in_fd, int out_fd);
+void mux_attach(unsigned unit, char mode, int in_fd, int out_fd);
 void mux_poll(unsigned trace);
 
 void mux_write(uint16_t addr, uint8_t val, uint32_t trace);

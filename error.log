@@ -1,0 +1,44 @@
+Requested mux read at 'F201' on mode '1'
+Normal read, return '4D' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '46' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '32' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '30' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '36' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '20' for unit 0
+Requested mux read at 'F206' on mode '0'
+Requested mux read at 'F201' on mode '1'
+Normal read, return '20' for unit 0
+Requested mux read at 'F207' on mode '1'
+Starting read
+Mux not ready, return 'FF' for unit 3
+Requested mux read at 'F201' on mode '1'
+Normal read, return '30' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '31' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return 'D' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '4D' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '46' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '32' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '30' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '36' for unit 0
+Requested mux read at 'F201' on mode '1'
+Normal read, return '20' for unit 0
+Requested mux read at 'F206' on mode '0'
+Requested mux read at 'F201' on mode '1'
+Normal read, return '20' for unit 0
+Requested mux read at 'F207' on mode '1'
+Starting read
+Mux not ready, return 'FF' for unit 3
+Requested mux read at 'F201' on mode '1'
+Normal read, return 'D' for unit 0

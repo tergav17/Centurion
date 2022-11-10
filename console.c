@@ -46,7 +46,7 @@ void tty_init(void)
 		tcsetattr(0, TCSADRAIN, &term);
 	}
 
-        mux_attach(0, STDIN_FILENO, STDOUT_FILENO);
+        mux_attach(0, 0, STDIN_FILENO, STDOUT_FILENO);
 }
 
 void net_init(unsigned short port)
@@ -80,7 +80,7 @@ void net_init(unsigned short port)
 	close(sock_fd);
 	fcntl(io_fd, F_SETFL, FNDELAY);
 
-        mux_attach(0, io_fd, io_fd);
+        mux_attach(0, 0, io_fd, io_fd);
 }
 
 static int select_wrapper(int maxfd, fd_set* i, fd_set* o)

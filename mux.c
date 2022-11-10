@@ -54,15 +54,17 @@ void mux_init(void)
 	for (i = 0; i < NUM_MUX_UNITS; i++) {
 		mux[i].in_fd = -1;
 		mux[i].out_fd = -1;
+		mux[i].mode = 0;
 	}
 
 	mux_reset();
 }
 
-void mux_attach(unsigned unit, int in_fd, int out_fd)
+void mux_attach(unsigned unit, char mode, int in_fd, int out_fd)
 {
 	mux[unit].in_fd = in_fd;
 	mux[unit].out_fd = out_fd;
+	mux[unit].mode = mode;
 }
 
 /* Utility functions for the mux */
@@ -77,32 +79,51 @@ static unsigned int next_char(uint8_t unit)
 	 * This should also cover an unconnected units (in_fd == -1) because they will
 	 * never become ready to read
 	 */
+	
+	if (unit != 0) fprintf(stderr, "Starting read\n");
+
 	if (!(mux[unit].status & MUX_RX_READY)) {
+
+		fprintf(stderr, "Mux not ready, return '%X' for unit %d\n", mux[unit].lastc, unit);
 		return mux[unit].lastc;
 	}
 
+	
 	r = read(mux[unit].in_fd, &c, 1);
 
-	if (r == 0) {
-		emulator_done = 1;
-		return mux[unit].lastc;
-	}
+	if (unit != 0) fprintf(stderr, "Read complete\n");
 
-	if (r < 0) {
-		/* Someone read the port when nothing there */
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+	/* if mode is console (0), do character preprocessing */
+	if (!mux[unit].mode) {
+		if (r == 0) {
+			emulator_done = 1;
 			return mux[unit].lastc;
 		}
-		exit(1);
-	}
 
-	if (c == 0x7F) {
-		/* Some terminals (like Cygwin) send DEL on Backspace */
-		c = 0x08;
+		if (r < 0) {
+			/* Someone read the port when nothing there */
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				return mux[unit].lastc;
+			}
+			exit(1);
+		}
+
+		if (c == 0x7F) {
+			/* Some terminals (like Cygwin) send DEL on Backspace */
+			c = 0x08;
+		}	
+	} else {
+		/* if nothing has been read, just return 0 */
+		if (r <= 0) {
+			c = 0;
+			fprintf(stderr, "Nothing has been read!\n");
+		}
 	}
 
 
 	mux[unit].lastc = c;
+
+	fprintf(stderr, "Normal read, return '%X' for unit %d\n", c, unit);
 
 	return c;
 }
@@ -145,7 +166,8 @@ static void mux_unit_send(unsigned unit, uint8_t val) {
 	}
 
 	if (mux[unit].out_fd > 1) {
-		val &= 0x7F;
+		/* if not in console mode, then just send the "real" value */
+		if (!mux[unit].mode) val &= 0x7F;
 		write(mux[unit].out_fd, &val, 1);
 	} else {
 		val &= 0x7F;
@@ -275,7 +297,9 @@ uint8_t mux_read(uint16_t addr, uint32_t trace)
 {
 	unsigned card, port, unit, data, mode;
 
+	
 	data = 0;
+
 
 	// It seems that all mux units share the same cause register via chaining
 	if (addr == 0xf20f) {
@@ -317,6 +341,8 @@ uint8_t mux_read(uint16_t addr, uint32_t trace)
 		return data;
 	}
 
+	if (addr != 0xF200) fprintf(stderr, "Requested mux read at '%X' on mode '%d'\n", addr, mode);
+	
 	switch (mode)
 	{
 	case 0x0: // Status register

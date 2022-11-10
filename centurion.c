@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <termios.h>
 
 #include "centurion.h"
 #include "console.h"
@@ -704,6 +705,41 @@ uint16_t parse_address(char *arg, char* arg_name) {
 	return load_addr;
 }
 
+/* attaches an external file to a mux */
+void extern_init(char* arg)
+{
+	FILE* fp;
+	struct termios port;
+	int fn, flag, r;
+
+	fp = fopen(arg, "r+b");
+
+	if (fp != NULL) {
+		fn = fileno(fp);
+
+		/* set to non-blocking access */
+		flag = fcntl(fn, F_GETFL, 0);
+		fcntl(fn, F_SETFL, flag | O_NONBLOCK);
+
+		/* set processing to non-canonical */
+		r = tcgetattr(fn, &port);
+		if (r < 0) {
+			printf("Failed to get port attributes\n");
+		} else {
+			port.c_lflag |= ICANON;
+			port.c_oflag &= ~ONLCR;
+			r = tcsetattr(fn, TCSANOW, &port);
+			if (r < 0) {
+				printf("Failed to set port attributes\n");
+			}
+		}
+
+		mux_attach(3, 1, fn, fn);
+	} else {
+		printf("Failed to attach %s\n", arg);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	int opt;
@@ -717,7 +753,7 @@ int main(int argc, char *argv[])
 
 	mux_init();
 
-	while ((opt = getopt(argc, argv, "b::A:E:dFl:s:S:t:T:")) != -1) {
+	while ((opt = getopt(argc, argv, "b::A:E:dFl:s:S:t:T:m:")) != -1) {
 		switch (opt) {
 		case 'b':
 			binary = 1;
@@ -750,6 +786,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'T':
 			terminate_at = atol(optarg);
+			break;
+		case 'm':
+			extern_init(optarg);
 			break;
 		default:
 			usage();
